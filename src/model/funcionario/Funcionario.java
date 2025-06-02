@@ -1,6 +1,6 @@
 package model.funcionario;
 
-public class Funcionario {
+public class Funcionario implements Comparable<Funcionario> {
     private int codigo;
     private String nome;
     private int contato;
@@ -69,6 +69,10 @@ public class Funcionario {
     
     public double calcularSalario() {
         return diasTrabalhados * salarioDiario;
+    }
+    
+    public int compareTo(Funcionario outro) {
+        return this.nome.compareTo(outro.getNome());
     }
     
     @Override

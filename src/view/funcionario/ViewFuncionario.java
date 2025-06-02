@@ -1,5 +1,5 @@
 package view.funcionario;
-
+import java.util.Collections;
 import java.awt.BorderLayout;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -36,7 +36,7 @@ public class ViewFuncionario implements ActionListener, MouseListener {
     private JTextField txtDiasTrabalhados;
     private JTextField txtSalarioDiario;
     
-    private JButton btnAdicionar, btnListar, btnEditar, btnRemover, btnLimpar, btnNovo;
+    private JButton btnOrdenar, btnAdicionar, btnListar, btnEditar, btnRemover, btnLimpar, btnNovo;
     private DefaultTableModel tableModel;
     
     public ViewFuncionario() {
@@ -44,6 +44,7 @@ public class ViewFuncionario implements ActionListener, MouseListener {
     }
     
     private void initialize() {
+    	
         frmGestaoDeFuncionario = new JFrame();
         frmGestaoDeFuncionario.setFont(new Font("Dialog", Font.BOLD, 14));
         frmGestaoDeFuncionario.setTitle("GESTÃO DE FUNCIONÁRIOS");
@@ -150,15 +151,16 @@ public class ViewFuncionario implements ActionListener, MouseListener {
         btnRemover.addActionListener(this);
         panel_1.add(btnRemover);
         
+          
+        btnOrdenar = new JButton("LISTA ORDENADA");
+        btnOrdenar.setBounds(53, 166, 192, 35);
+        btnOrdenar.addActionListener(this);
+        panel_1.add(btnOrdenar);
+        
         btnLimpar = new JButton("LIMPAR");
-        btnLimpar.setBounds(53, 166, 192, 35);
-        btnLimpar.addActionListener(this);
+        btnLimpar.setBounds(53, 203, 192, 35);
         panel_1.add(btnLimpar);
         
-        btnNovo = new JButton("NOVO");
-        btnNovo.setBounds(53, 206, 192, 43);
-        btnNovo.addActionListener(this);
-        panel_1.add(btnNovo);
         
         // Painel de listagem
         JPanel panel_2 = new JPanel();
@@ -173,7 +175,7 @@ public class ViewFuncionario implements ActionListener, MouseListener {
         tableModel = new DefaultTableModel(
             new Object[][] {},
             new String[] {
-                "CÓDIGO", "NOME", "CONTATO", "DEPARTAMENTO", "GÊNERO", "ESTADO CIVIL", "DIAS TRABALHADOS", "SALÁRIO DIÁRIO"
+                "CÓDIGO", "NOME", "CONTATO", "DEPARTAMENTO", "GÊNERO", "ESTADO CIVIL", "DIAS TRABALHADOS", "SALÁRIO DIÁRIO", "SALÁRIO MENSAL"
             }
         );
         
@@ -198,7 +200,7 @@ public class ViewFuncionario implements ActionListener, MouseListener {
     private void listarFuncionarios() {
         try {
             ArrayList<Funcionario> funcionarios = ControllerFuncionario.listaFuncionario();
-            tableModel.setRowCount(0); // Limpa a tabela
+            tableModel.setRowCount(0); 
             
             for (Funcionario f : funcionarios) {
                 tableModel.addRow(new Object[] {
@@ -209,7 +211,8 @@ public class ViewFuncionario implements ActionListener, MouseListener {
                     f.getGeneroDescricao(),
                     f.getEstadoCivilDescricao(),
                     f.getDiasTrabalhados(),
-                    f.getSalarioDiario()
+                    f.getSalarioDiario(),
+                    f.calcularSalario()
                 });
             }
         } catch (SQLException ex) {
@@ -217,11 +220,35 @@ public class ViewFuncionario implements ActionListener, MouseListener {
         }
     }
     
+    private void ordenarFuncionarios() {
+        try {
+            ArrayList<Funcionario> funcionarios = ControllerFuncionario.listaFuncionario();
+            Collections.sort(funcionarios);  
+            
+            tableModel.setRowCount(0); 
+            
+            for (Funcionario f : funcionarios) {
+                tableModel.addRow(new Object[] {
+                    f.getCodigo(),
+                    f.getNome(),
+                    f.getContato(),
+                    f.getDepartamento(),
+                    f.getGeneroDescricao(),
+                    f.getEstadoCivilDescricao(),
+                    f.getDiasTrabalhados(),
+                    f.getSalarioDiario(),
+                    f.calcularSalario()  
+                });
+            }
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(null, "Erro ao ordenar funcionários: " + ex.getMessage());
+        }
+    }
+    ~
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == btnAdicionar) {
             try {
-                int codigo = Integer.parseInt(txtCodigo.getText());
                 String nome = txtNome.getText();
                 int contacto = Integer.parseInt(txtContacto.getText());
                 String departamento = txtDepartamento.getText();
@@ -230,7 +257,7 @@ public class ViewFuncionario implements ActionListener, MouseListener {
                 int diasTrabalhados = Integer.parseInt(txtDiasTrabalhados.getText());
                 double salarioDiario = Double.parseDouble(txtSalarioDiario.getText());
                 
-                ControllerFuncionario.adicionarFuncionario(codigo, nome, contacto, departamento, 
+                ControllerFuncionario.adicionarFuncionario(0, nome, contacto, departamento, 
                                                          genero, estadoCivil, diasTrabalhados, salarioDiario);
                 JOptionPane.showMessageDialog(null, "Funcionário adicionado com sucesso!");
                 limparCampos();
@@ -279,10 +306,13 @@ public class ViewFuncionario implements ActionListener, MouseListener {
         else if (e.getSource() == btnNovo) {
             limparCampos();
             txtCodigo.requestFocus();
+        } else if (e.getSource() == btnOrdenar) {
+            ordenarFuncionarios();
         }
     }
     
     @Override
+    
     public void mouseClicked(MouseEvent e) {
         if (e.getSource() == listagem) {
             int linha = listagem.getSelectedRow();
