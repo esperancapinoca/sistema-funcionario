@@ -9,13 +9,16 @@ import java.awt.event.MouseListener;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.ButtonGroup;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
 
@@ -27,14 +30,15 @@ public class ViewFuncionario implements ActionListener, MouseListener {
     
     private JFrame frmGestaoDeFuncionario;
     private JTable listagem;
-    private JTextField txtCodigo;
     private JTextField txtNome;
     private JTextField txtContacto;
-    private JTextField txtDepartamento;
-    private JTextField txtGenero;
-    private JTextField txtEstadoCivil;
+    private JComboBox<String> cbDepartamento;
+    private JRadioButton rbMasculino, rbFeminino;
+    private JComboBox<String> cbEstadoCivil;
     private JTextField txtDiasTrabalhados;
     private JTextField txtSalarioDiario;
+    
+    private ButtonGroup generoGroup = new ButtonGroup();
     
     private JButton btnOrdenar, btnAdicionar, btnListar, btnEditar, btnRemover, btnLimpar, btnNovo;
     private DefaultTableModel tableModel;
@@ -59,21 +63,16 @@ public class ViewFuncionario implements ActionListener, MouseListener {
         frmGestaoDeFuncionario.getContentPane().add(panel);
         panel.setLayout(null);
         
-        // Componentes do painel de dados
-        JLabel lblCodigo = new JLabel("CÓDIGO:");
-        lblCodigo.setBounds(15, 30, 80, 20);
-        panel.add(lblCodigo);
-        
         JLabel lblNome = new JLabel("NOME:");
-        lblNome.setBounds(15, 70, 80, 20);
+        lblNome.setBounds(15, 30, 80, 20);
         panel.add(lblNome);
         
         JLabel lblContacto = new JLabel("CONTATO:");
-        lblContacto.setBounds(15, 110, 80, 20);
+        lblContacto.setBounds(15, 70, 80, 20);
         panel.add(lblContacto);
         
         JLabel lblDepartamento = new JLabel("DEPARTAMENTO:");
-        lblDepartamento.setBounds(15, 150, 100, 20);
+        lblDepartamento.setBounds(15, 110, 100, 20);
         panel.add(lblDepartamento);
         
         JLabel lblGenero = new JLabel("GÊNERO:");
@@ -92,29 +91,36 @@ public class ViewFuncionario implements ActionListener, MouseListener {
         lblSalarioDiario.setBounds(350, 150, 100, 20);
         panel.add(lblSalarioDiario);
         
-        txtCodigo = new JTextField();
-        txtCodigo.setBounds(120, 25, 200, 30);
-        panel.add(txtCodigo);
-        
         txtNome = new JTextField();
-        txtNome.setBounds(120, 65, 200, 30);
+        txtNome.setBounds(120, 25, 200, 30);
         panel.add(txtNome);
         
         txtContacto = new JTextField();
-        txtContacto.setBounds(120, 105, 200, 30);
+        txtContacto.setBounds(120, 65, 200, 30);
         panel.add(txtContacto);
         
-        txtDepartamento = new JTextField();
-        txtDepartamento.setBounds(120, 145, 200, 30);
-        panel.add(txtDepartamento);
+        // Combobox para Departamento
+        cbDepartamento = new JComboBox<>(new String[]{"TI", "RH", "Financeiro", "Vendas", "Produção"});
+        cbDepartamento.setBounds(120, 105, 200, 30);
+        panel.add(cbDepartamento);
         
-        txtGenero = new JTextField();
-        txtGenero.setBounds(460, 25, 170, 30);
-        panel.add(txtGenero);
+        // Radio buttons para Gênero
+        generoGroup = new ButtonGroup();
+        JPanel generoPanel = new JPanel();
+        generoPanel.setBounds(460, 25, 170, 30);
+        rbMasculino = new JRadioButton("Masculino");
+        rbFeminino = new JRadioButton("Feminino");
+        ButtonGroup generoGroup = new ButtonGroup();
+        generoGroup.add(rbMasculino);
+        generoGroup.add(rbFeminino);
+        generoPanel.add(rbMasculino);
+        generoPanel.add(rbFeminino);
+        panel.add(generoPanel);
         
-        txtEstadoCivil = new JTextField();
-        txtEstadoCivil.setBounds(460, 65, 170, 30);
-        panel.add(txtEstadoCivil);
+        // Combobox para Estado Civil
+        cbEstadoCivil = new JComboBox<>(new String[]{"Casado", "Solteiro", "Divorciado", "Viúvo"});
+        cbEstadoCivil.setBounds(460, 65, 170, 30);
+        panel.add(cbEstadoCivil);
         
         txtDiasTrabalhados = new JTextField();
         txtDiasTrabalhados.setBounds(460, 105, 170, 30);
@@ -151,7 +157,6 @@ public class ViewFuncionario implements ActionListener, MouseListener {
         btnRemover.addActionListener(this);
         panel_1.add(btnRemover);
         
-          
         btnOrdenar = new JButton("LISTA ORDENADA");
         btnOrdenar.setBounds(53, 166, 192, 35);
         btnOrdenar.addActionListener(this);
@@ -159,8 +164,8 @@ public class ViewFuncionario implements ActionListener, MouseListener {
         
         btnLimpar = new JButton("LIMPAR");
         btnLimpar.setBounds(53, 203, 192, 35);
+        btnLimpar.addActionListener(this);
         panel_1.add(btnLimpar);
-        
         
         // Painel de listagem
         JPanel panel_2 = new JPanel();
@@ -187,16 +192,14 @@ public class ViewFuncionario implements ActionListener, MouseListener {
     }
     
     private void limparCampos() {
-        txtCodigo.setText("");
         txtNome.setText("");
         txtContacto.setText("");
-        txtDepartamento.setText("");
-        txtGenero.setText("");
-        txtEstadoCivil.setText("");
+        cbDepartamento.setSelectedIndex(0);
+        generoGroup.clearSelection();  
+        cbEstadoCivil.setSelectedIndex(0);
         txtDiasTrabalhados.setText("");
         txtSalarioDiario.setText("");
     }
-    
     private void listarFuncionarios() {
         try {
             ArrayList<Funcionario> funcionarios = ControllerFuncionario.listaFuncionario();
@@ -244,16 +247,16 @@ public class ViewFuncionario implements ActionListener, MouseListener {
             JOptionPane.showMessageDialog(null, "Erro ao ordenar funcionários: " + ex.getMessage());
         }
     }
-    ~
+    
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == btnAdicionar) {
             try {
                 String nome = txtNome.getText();
                 int contacto = Integer.parseInt(txtContacto.getText());
-                String departamento = txtDepartamento.getText();
-                char genero = txtGenero.getText().isEmpty() ? ' ' : txtGenero.getText().charAt(0);
-                char estadoCivil = txtEstadoCivil.getText().isEmpty() ? ' ' : txtEstadoCivil.getText().charAt(0);
+                String departamento = (String) cbDepartamento.getSelectedItem();
+                char genero = rbMasculino.isSelected() ? 'M' : 'F';
+                char estadoCivil = cbEstadoCivil.getSelectedItem().toString().charAt(0);
                 int diasTrabalhados = Integer.parseInt(txtDiasTrabalhados.getText());
                 double salarioDiario = Double.parseDouble(txtSalarioDiario.getText());
                 
@@ -271,12 +274,18 @@ public class ViewFuncionario implements ActionListener, MouseListener {
         }
         else if (e.getSource() == btnEditar) {
             try {
-                int codigo = Integer.parseInt(txtCodigo.getText());
+                int linhaSelecionada = listagem.getSelectedRow();
+                if (linhaSelecionada == -1) {
+                    JOptionPane.showMessageDialog(null, "Selecione um funcionário para editar!");
+                    return;
+                }
+                
+                int codigo = (int) tableModel.getValueAt(linhaSelecionada, 0);
                 String nome = txtNome.getText();
                 int contacto = Integer.parseInt(txtContacto.getText());
-                String departamento = txtDepartamento.getText();
-                char genero = txtGenero.getText().isEmpty() ? ' ' : txtGenero.getText().charAt(0);
-                char estadoCivil = txtEstadoCivil.getText().isEmpty() ? ' ' : txtEstadoCivil.getText().charAt(0);
+                String departamento = (String) cbDepartamento.getSelectedItem();
+                char genero = rbMasculino.isSelected() ? 'M' : 'F';
+                char estadoCivil = cbEstadoCivil.getSelectedItem().toString().charAt(0);
                 int diasTrabalhados = Integer.parseInt(txtDiasTrabalhados.getText());
                 double salarioDiario = Double.parseDouble(txtSalarioDiario.getText());
                 
@@ -291,7 +300,13 @@ public class ViewFuncionario implements ActionListener, MouseListener {
         }
         else if (e.getSource() == btnRemover) {
             try {
-                int codigo = Integer.parseInt(txtCodigo.getText());
+                int linhaSelecionada = listagem.getSelectedRow();
+                if (linhaSelecionada == -1) {
+                    JOptionPane.showMessageDialog(null, "Selecione um funcionário para remover!");
+                    return;
+                }
+                
+                int codigo = (int) tableModel.getValueAt(linhaSelecionada, 0);
                 ControllerFuncionario.removerFuncionario(codigo);
                 JOptionPane.showMessageDialog(null, "Funcionário removido com sucesso!");
                 limparCampos();
@@ -303,26 +318,28 @@ public class ViewFuncionario implements ActionListener, MouseListener {
         else if (e.getSource() == btnLimpar) {
             limparCampos();
         }
-        else if (e.getSource() == btnNovo) {
-            limparCampos();
-            txtCodigo.requestFocus();
-        } else if (e.getSource() == btnOrdenar) {
+        else if (e.getSource() == btnOrdenar) {
             ordenarFuncionarios();
         }
     }
     
     @Override
-    
     public void mouseClicked(MouseEvent e) {
         if (e.getSource() == listagem) {
             int linha = listagem.getSelectedRow();
             if (linha >= 0) {
-                txtCodigo.setText(tableModel.getValueAt(linha, 0).toString());
                 txtNome.setText(tableModel.getValueAt(linha, 1).toString());
                 txtContacto.setText(tableModel.getValueAt(linha, 2).toString());
-                txtDepartamento.setText(tableModel.getValueAt(linha, 3).toString());
-                txtGenero.setText(tableModel.getValueAt(linha, 4).toString().substring(0, 1));
-                txtEstadoCivil.setText(tableModel.getValueAt(linha, 5).toString().substring(0, 1));
+                cbDepartamento.setSelectedItem(tableModel.getValueAt(linha, 3).toString());
+                
+                String genero = tableModel.getValueAt(linha, 4).toString();
+                if (genero.equals("Masculino")) {
+                    rbMasculino.setSelected(true);
+                } else {
+                    rbFeminino.setSelected(true);
+                }
+                
+                cbEstadoCivil.setSelectedItem(tableModel.getValueAt(linha, 5).toString());
                 txtDiasTrabalhados.setText(tableModel.getValueAt(linha, 6).toString());
                 txtSalarioDiario.setText(tableModel.getValueAt(linha, 7).toString());
             }
